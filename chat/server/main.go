@@ -41,9 +41,9 @@ func handleConn(conn net.Conn) {
 	who := ""
 	if input.Scan() {
 		who = input.Text()
-	} else {
-		return
-	}
+	} //else {
+	// 	return
+	// }
 	ch <- "YoU are " + who
 	messages <- who + " has arrived"
 	entering <- ch
