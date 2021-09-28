@@ -13,7 +13,6 @@ var (
 	entering = make(chan client)
 	leaving  = make(chan client)
 	messages = make(chan string)
-	//nick     = make(chan string)
 )
 
 func main() {
@@ -34,23 +33,29 @@ func main() {
 }
 
 func handleConn(conn net.Conn) {
+	defer conn.Close()
 	ch := make(chan string)
 	go clientWriter(conn, ch)
 
-	who := <-ch
+	input := bufio.NewScanner(conn)
+	who := ""
+	if input.Scan() {
+		who = input.Text()
+	} else {
+		return
+	}
 	ch <- "YoU are " + who
 	messages <- who + " has arrived"
 	entering <- ch
 
 	log.Println(who + " has arrived")
 
-	input := bufio.NewScanner(conn)
 	for input.Scan() {
 		messages <- who + ":" + input.Text()
 	}
 	leaving <- ch
 	messages <- who + "has left"
-	conn.Close()
+
 }
 
 func clientWriter(conn net.Conn, ch <-chan string) {
